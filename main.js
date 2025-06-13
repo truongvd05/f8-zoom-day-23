@@ -10,19 +10,41 @@ const task = $(".task-grid");
 const btnSubmit = $(".btn-primary");
 const scrollForm = $(".modal");
 const searchInput = $(".search-input");
+const btnCompleted = $(".tab-button-complete");
+const btnActive = $(".btn-active");
 
 const closeModal = $$(".modal-close");
 
-console.log(searchInput);
+// console.log(btnCompleted);
+
+const todoTask = JSON.parse(localStorage.getItem("localtasks")) ?? [];
+
+// lọc các task đã hoàn thành
+btnCompleted.onclick = function (e) {
+    btnCompleted.classList.toggle("active");
+    const marks = todoTask.filter((mark) => mark.isCompleted);
+    if (marks) {
+        renderTask(marks);
+    }
+};
+
+btnActive.onclick = function () {
+    renderTask();
+};
 
 searchInput.oninput = function (event) {
-    const searchValue = event.target.value.trim();
-    console.log(searchValue);
+    // lưu giá trị input và xóa khoảng trắng
+    const searchValue = event.target.value.trim().toLowerCase();
+    // lấy ra title từng task
+    const newTitle = todoTask.filter((task) =>
+        task.title.includes(String(searchValue.toLowerCase()))
+    );
+    console.log(newTitle);
+
+    renderTask(newTitle);
 };
 
 let editIndex = null;
-
-const todoTask = JSON.parse(localStorage.getItem("localtasks")) ?? [];
 
 task.onclick = function (e) {
     const editBtn = e.target.closest(".edit-btn");
@@ -34,7 +56,6 @@ task.onclick = function (e) {
         const taskIndex = editBtn.dataset.index;
         const task = todoTask[taskIndex];
         editIndex = taskIndex;
-        console.log(task);
 
         for (const key in task) {
             const value = task[key];
@@ -101,20 +122,22 @@ formData.onsubmit = function (e) {
     }
 
     // forcus form
+    saveTodoTask();
     closeForm();
     renderTask();
 };
 
 // render task
-function renderTask() {
-    if (!todoTask.length) {
-        return (task.innerHTML = `<p>chưa có task nào</p>`);
+function renderTask(data = todoTask) {
+    if (!data.length) {
+        return (task.innerHTML = `<p>Không có task nào</p>`);
     }
-    const html = todoTask
+    const html = data
         .map(
-            (task, index) => `<div class="task-card ${task.color} ${
-                task.isCompleted ? "completed" : ""
-            }">
+            (task, index) =>
+                `<div class="task-card ${task.color} ${
+                    task.isCompleted ? "completed" : ""
+                }">
                     <div class="task-header">
                         <h3 class="task-title">${task.title}</h3>
                         <button class="task-menu">
