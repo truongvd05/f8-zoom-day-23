@@ -12,10 +12,12 @@ const scrollForm = $(".modal");
 const searchInput = $(".search-input");
 const btnCompleted = $(".tab-button-complete");
 const btnActive = $(".btn-active");
+const alertBtn = $(".alert-close");
+const closeAlert = $(".alert-toast");
 
 const closeModal = $$(".modal-close");
 
-// console.log(btnCompleted);
+// console.log(alertBtn);
 
 const todoTask = JSON.parse(localStorage.getItem("localtasks")) ?? [];
 
@@ -28,6 +30,10 @@ btnCompleted.onclick = function (e) {
     }
 };
 
+// đóng warn thủ công
+alertBtn.onclick = function () {
+    closeAlert.classList.remove("turn-off");
+};
 btnActive.onclick = function () {
     renderTask();
 };
@@ -39,7 +45,6 @@ searchInput.oninput = function (event) {
     const newTitle = todoTask.filter((task) =>
         task.title.includes(String(searchValue.toLowerCase()))
     );
-    console.log(newTitle);
 
     renderTask(newTitle);
 };
@@ -110,6 +115,15 @@ formData.onsubmit = function (e) {
     e.preventDefault();
     // lấy dữ liệu từ form
     const newTask = Object.fromEntries(new FormData(formData));
+    const allTitle = todoTask.map((task) => task.title.toLowerCase());
+    const inputTitle = $(".form-input");
+    const value = inputTitle.value.toLowerCase();
+
+    if (allTitle.includes(value)) {
+        console.log(closeAlert);
+        closeAlert.classList.add("turn-off");
+        return setTimeout(() => closeAlert.classList.remove("turn-off"), 3000);
+    }
 
     //  nếu có index tức đang sửa form
     if (editIndex) {
@@ -127,6 +141,13 @@ formData.onsubmit = function (e) {
     renderTask();
 };
 
+// escapese HTML
+function escapeseHTML(html) {
+    const div = document.createElement("div");
+    div.textContent = html;
+    return div.innerHTML;
+}
+
 // render task
 function renderTask(data = todoTask) {
     if (!data.length) {
@@ -135,11 +156,11 @@ function renderTask(data = todoTask) {
     const html = data
         .map(
             (task, index) =>
-                `<div class="task-card ${task.color} ${
+                `<div class="task-card ${escapeseHTML(task.color)} ${
                     task.isCompleted ? "completed" : ""
                 }">
                     <div class="task-header">
-                        <h3 class="task-title">${task.title}</h3>
+                        <h3 class="task-title">${escapeseHTML(task.title)}</h3>
                         <button class="task-menu">
                             <i class="fa-solid fa-ellipsis fa-icon"></i>
                             <div class="dropdown-menu">
@@ -164,9 +185,13 @@ function renderTask(data = todoTask) {
                             </div>
                         </button>
                     </div>
-                    <p class="task-description">${task.description}
+                    <p class="task-description">${escapeseHTML(
+                        task.description
+                    )}
                     </p>
-                    <div class="task-time">${task.start} - ${task.end}</div>
+                    <div class="task-time">${escapeseHTML(
+                        task.start
+                    )} - ${escapeseHTML(task.end)}</div>
                 </div>`
         )
         .join("");
